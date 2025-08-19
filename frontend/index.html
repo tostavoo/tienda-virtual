@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mi Tienda</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <!-- Encabezado -->
+  <header>
+    <div class="logo">MiTienda</div>
+
+    <nav aria-label="Principal">
+      <a href="#">Inicio</a>
+      <a href="#">Productos</a>
+      <a href="#">Ofertas</a>
+      <a href="#">Contacto</a>
+    </nav>
+
+    <div class="header-actions">
+      <!-- 📦 Mis pedidos (visible con sesión iniciada) -->
+      <a id="orders-link" href="#" class="btn ghost" hidden>Mis pedidos</a>
+
+      <!-- 🔐 Auth -->
+      <div id="auth-controls" class="auth-controls">
+        <button id="btn-login" class="btn ghost" type="button">Iniciar sesión</button>
+        <span id="auth-user" class="auth-user" hidden></span>
+        <button id="btn-logout" class="btn ghost" type="button" hidden>Salir</button>
+      </div>
+
+      <!-- ⚙️ Solo admin -->
+      <a id="admin-link" href="admin.html" class="btn ghost" hidden>Admin</a>
+
+      <!-- 🌓 Tema -->
+      <button id="theme-toggle" class="theme-btn" type="button" aria-label="Cambiar tema">🌓</button>
+
+      <!-- 🛒 Carrito -->
+      <button id="btn-cart" class="cart-btn" type="button" aria-haspopup="dialog" aria-controls="cart-panel">
+        🛒 Carrito <span id="cart-count" aria-live="polite" aria-atomic="true">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Contenido principal -->
+  <main>
+    <!-- Listado de productos (se llena desde app.js) -->
+    <section class="productos" aria-label="Listado de productos"></section>
+
+    <!-- Mis pedidos -->
+    <section id="orders-section" class="orders-section" hidden aria-label="Mis pedidos">
+      <h2>Mis pedidos</h2>
+      <div id="orders-empty" class="orders-empty" hidden>No tienes pedidos todavía.</div>
+      <div class="orders-table-wrap">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Artículos</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody id="orders-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Panel Carrito -->
+  <aside id="cart-panel" class="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cart-title" tabindex="-1" aria-hidden="true">
+    <div class="cart-header">
+      <h2 id="cart-title">Tu carrito</h2>
+      <button id="close-cart" class="close-cart" type="button" aria-label="Cerrar carrito">✕</button>
+    </div>
+
+    <ul id="cart-items" class="cart-items"></ul>
+
+    <div class="cart-footer">
+      <div class="cart-row">
+        <span>Subtotal:</span>
+        <span id="cart-subtotal">$0</span>
+      </div>
+      <div class="cart-row">
+        <span>IVA (19%):</span>
+        <span id="cart-iva">$0</span>
+      </div>
+      <div class="cart-row total">
+        <strong>Total:</strong>
+        <strong id="cart-total">$0</strong>
+      </div>
+
+      <button class="checkout" type="button" disabled>Proceder al pago</button>
+    </div>
+  </aside>
+
+  <!-- Pie de página -->
+  <footer>
+    <p>© 2025 Mi Tienda - Todos los derechos reservados</p>
+  </footer>
+
+  <!-- Botón flotante de WhatsApp -->
+  <a href="https://wa.me/573223123645?text=Hola%20quiero%20m%C3%A1s%20informaci%C3%B3n"
+     class="whatsapp-float" target="_blank" rel="noopener noreferrer" title="Chatea por WhatsApp">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" width="35" height="35">
+  </a>
+
+  <!-- Login rápido (modal overlay) -->
+  <div id="login-box" class="login-box" hidden>
+    <form id="login-form" class="login-form">
+      <h3>Iniciar sesión</h3>
+      <label>Email</label>
+      <input id="login-email" type="email" required placeholder="correo@correo.com">
+      <label>Contraseña</label>
+      <input id="login-pass" type="password" required placeholder="••••••••">
+      <button type="submit">Entrar</button>
+      <button type="button" id="login-cancel">Cancelar</button>
+      <p class="hint">Demo: admin@mitienda.com / admin123 ó cliente@correo.com / cliente123</p>
+    </form>
+  </div>
+
+  <!-- Script principal -->
+  <script src="app.js"></script>
+</body>
+</html>

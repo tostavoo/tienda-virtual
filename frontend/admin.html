@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin | Mi Tienda</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header>
+    <div class="logo">MiTienda — Admin</div>
+
+    <nav aria-label="Admin">
+      <a href="index.html">Volver a tienda</a>
+    </nav>
+
+    <div class="header-actions">
+      <span id="admin-user" class="auth-user" hidden></span>
+      <button id="admin-logout" class="btn ghost" type="button" hidden>Salir</button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <section class="admin-guard" id="admin-guard">
+      Verificando permisos…
+    </section>
+
+    <section id="admin-content" class="admin-content" hidden>
+      <h1>Panel de pedidos</h1>
+
+      <!-- Filtros -->
+      <div class="filters">
+        <label>
+          Estado:
+          <select id="f-status">
+            <option value="">Todos</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="enviado">Enviado</option>
+            <option value="entregado">Entregado</option>
+          </select>
+        </label>
+
+        <label>
+          Buscar por cliente/email:
+          <input id="f-q" type="text" placeholder="Nombre o email">
+        </label>
+
+        <button id="f-apply" class="btn">Aplicar</button>
+        <button id="f-clear" class="btn ghost">Limpiar</button>
+      </div>
+
+      <!-- Resumen simple -->
+      <div class="admin-stats" id="admin-stats">
+        <!-- Se llena por JS -->
+      </div>
+
+      <!-- Tabla pedidos -->
+      <div class="orders-table-wrap">
+        <table class="orders-table">
+          <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Estado</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Acciones</th>
+          </tr>
+          </thead>
+          <tbody id="admin-orders-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>

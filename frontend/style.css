@@ -1,0 +1,250 @@
+/* ========== Reset & base ========== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--fg); }
+
+/* ========== Variables (light) ========== */
+:root{
+  --bg:#f5f7fb;
+  --fg:#0f1115;
+  --muted:#6b7280;
+  --card:#ffffff;
+  --border:#e5e7eb;
+  --shadow:rgba(15,17,21,.10);
+
+  --accent:#ff6a00;              /* marca (botones) */
+  --accent-600:#ff6a00;
+  --accent-700:#e65f00;
+  --ring:rgba(255,106,0,.25);
+
+  --header-bg:#0f1115;           /* header/pie */
+  --header-fg:#ffffff;
+
+  --price:#16a34a;               /* precios */
+  --pill:#111827cc;              /* badge contador carrito */
+}
+
+/* ========== Dark ========== */
+body.dark{
+  --bg:#0b0c0f;
+  --fg:#e5e7eb;
+  --muted:#9ca3af;
+  --card:#121419;
+  --border:#1f242d;
+  --shadow:rgba(0,0,0,.45);
+
+  --header-bg:#0b0c0f;
+  --header-fg:#e5e7eb;
+
+  --pill:#ffffff22;
+}
+
+/* ========== Header ========== */
+header{
+  position: sticky; top:0; z-index:10;
+  background:var(--header-bg); color:var(--header-fg);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 18px; box-shadow:0 1px 0 var(--border);
+}
+.logo{ font-weight:800; letter-spacing:.2px; }
+nav a{
+  color:var(--header-fg); text-decoration:none; margin-left:18px; opacity:.9;
+  padding:.25rem .35rem; border-radius:.4rem; transition:opacity .15s, background .15s;
+}
+nav a:hover{ opacity:1; background:#ffffff12; }
+
+.header-actions{ display:flex; align-items:center; gap:10px; }
+
+/* Botón de tema (ghost) */
+.theme-btn{
+  background:transparent; color:var(--header-fg);
+  border:1px solid #ffffff44; padding:8px 10px; border-radius:10px; cursor:pointer;
+}
+.theme-btn:hover{ background:#ffffff12; border-color:#ffffff66; }
+
+/* Carrito — SOLIDO + burbuja */
+.cart-btn{
+  display:flex; align-items:center; gap:8px;
+  background:var(--accent); color:#fff; border:none;
+  padding:8px 12px; border-radius:999px; cursor:pointer;
+  box-shadow:0 6px 16px var(--shadow); transition:transform .12s ease, filter .12s ease;
+}
+.cart-btn:hover{ transform:translateY(-1px); filter:brightness(.98); }
+#cart-count{
+  background:var(--pill); padding:2px 8px; border-radius:999px; font-weight:700;
+}
+
+/* ========== Layout principal ========== */
+main{ max-width:1100px; margin:0 auto; }
+
+/* ========== Tarjetas de producto ========== */
+.productos{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:22px; padding:24px;
+}
+.producto{
+  background:var(--card); border:1px solid var(--border); border-radius:16px;
+  padding:16px; text-align:center;
+  box-shadow:0 6px 18px var(--shadow);
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.producto:hover{ transform:translateY(-3px); box-shadow:0 10px 28px var(--shadow); border-color:#00000018; }
+.producto img{
+  width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:12px; margin-bottom:10px;
+}
+.producto h3{ margin:8px 0 2px; font-weight:700; }
+.producto .price{ color:var(--price); font-weight:800; margin-bottom:8px; }
+
+/* CTA producto */
+.producto button{
+  width:100%; background:transparent; color:var(--fg);
+  border:2px solid #11182722; padding:10px 12px; border-radius:10px; cursor:pointer;
+  transition:all .15s ease;
+}
+.producto button:hover{ border-color:var(--accent); color:var(--accent); box-shadow:0 6px 16px var(--shadow); }
+
+/* ========== Panel Carrito ========== */
+.cart-panel{
+  position:fixed; top:0; right:0; height:100%; width:360px; max-width:95vw;
+  background:var(--card); border-left:1px solid var(--border);
+  transform:translateX(100%); transition:transform .3s ease;
+  display:flex; flex-direction:column; z-index:999; box-shadow:-10px 0 30px var(--shadow);
+}
+.cart-panel.open{ transform:translateX(0); }
+.cart-header, .cart-footer{ padding:14px; border-bottom:1px solid var(--border); }
+.cart-footer{ border-bottom:none; border-top:1px solid var(--border); margin-top:auto; }
+
+.close-cart{
+  float:right; background:transparent; border:none; color:var(--fg);
+  font-size:20px; cursor:pointer; opacity:.85;
+}
+.close-cart:hover{ opacity:1; }
+
+.cart-items{ list-style:none; padding:10px 14px; overflow-y:auto; flex:1; }
+.cart-row{
+  display:grid; grid-template-columns:1fr auto 72px; gap:8px; align-items:center;
+  padding:8px 0; border-bottom:1px dashed var(--border);
+}
+.qty-controls{ display:flex; gap:8px; justify-content:flex-end; }
+.cart-row .rm, .cart-row .add{
+  width:32px; height:32px; border-radius:8px; cursor:pointer;
+  border:1px solid var(--border); background:transparent; color:var(--fg); font-size:18px;
+}
+.cart-row .rm:hover, .cart-row .add:hover{ border-color:var(--accent); color:var(--accent); }
+
+.cart-footer .cart-row{ display:flex; justify-content:space-between; align-items:center; margin:6px 0; }
+.cart-row.total{ border-top:1px solid var(--border); margin-top:10px; padding-top:10px; font-size:1.05rem; }
+
+/* Botón checkout (usa tu misma clase .checkout para no tocar JS) */
+.checkout{
+  width:100%; padding:12px; border:none; border-radius:10px;
+  background:var(--accent); color:#fff; cursor:pointer; font-weight:700;
+  box-shadow:0 10px 20px var(--shadow); transition:transform .12s ease, filter .12s ease;
+}
+.checkout:hover{ transform:translateY(-1px); filter:brightness(.98); }
+.checkout:disabled{ background:#9ca3af; cursor:not-allowed; }
+
+/* ========== Footer ========== */
+footer{
+  background:var(--header-bg); color:var(--header-fg);
+  text-align:center; padding:16px; margin-top:30px;
+}
+
+/* ========== WhatsApp FAB ========== */
+.whatsapp-float{
+  position:fixed; right:20px; bottom:20px; width:60px; height:60px;
+  background:#25d366; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 8px 20px var(--shadow); z-index:1000; transition:transform .2s ease;
+}
+.whatsapp-float img{ width:35px; height:35px; }
+.whatsapp-float:hover{ transform:scale(1.05); }
+.cart-panel.open ~ .whatsapp-float{ display:none; }
+
+/* Accesibilidad */
+:focus-visible{ outline:3px solid var(--ring); outline-offset:2px; }
+
+/* Sin scroll con panel abierto */
+body.noscroll{ overflow:hidden; }
+
+/* ========== Auth en header ========== */
+.btn.ghost{
+  background:transparent; border:1px solid #ffffff35; color:#fff;
+  padding:8px 10px; border-radius:10px; cursor:pointer; transition:all .15s ease;
+}
+.btn.ghost:hover{ background:#ffffff12; border-color:#ffffff66; }
+.auth-controls{ display:flex; align-items:center; gap:10px; }
+.auth-user{ font-size:.9rem; opacity:.9; white-space:nowrap; max-width:220px; overflow:hidden; text-overflow:ellipsis; }
+@media (max-width:640px){ .auth-user{ display:none; } }
+
+/* ========== Modal Login ========== */
+.login-box{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:1001; }
+.login-box:not([hidden]){ display:flex; }
+.login-form{
+  background:#fff; color:#111; width:min(92vw,380px); padding:18px 16px;
+  border-radius:12px; box-shadow:0 20px 40px rgba(0,0,0,.25); display:grid; gap:10px;
+}
+.login-form h3{ margin:0 0 6px; }
+.login-form label{ font-size:.9rem; opacity:.85; }
+.login-form input{
+  padding:10px 12px; border-radius:10px; border:1px solid #e5e7eb; outline:none; background:#fff; color:#111;
+}
+.login-form input:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--ring); }
+.login-form button[type="submit"]{
+  background:var(--accent); color:#fff; border:none; padding:10px 12px; border-radius:10px; cursor:pointer; font-weight:700;
+}
+#login-cancel{ background:#eef0f3; color:#111; border:none; padding:10px 12px; border-radius:10px; cursor:pointer; }
+#login-cancel:hover{ filter:brightness(.98); }
+.login-form .hint{ font-size:.85rem; color:#666; }
+
+/* Dark modal */
+body.dark .login-form{ background:#151821; color:#e5e7eb; border:1px solid #1f242d; }
+body.dark .login-form input{ background:#0f1117; color:#e5e7eb; border-color:#262b33; }
+body.dark #login-cancel{ background:#1f242d; color:#e5e7eb; }
+
+/* ========== "Mis pedidos" (cliente) ========== */
+.orders-section{ padding:20px 30px; }
+.orders-section h2{ margin-bottom:10px; }
+.orders-empty{
+  padding:14px; background:#fff3cd; border:1px solid #ffeeba; color:#856404; border-radius:10px;
+}
+.orders-table-wrap{ overflow-x:auto; margin-top:10px; }
+.orders-table{ width:100%; border-collapse:collapse; min-width:680px; }
+.orders-table th, .orders-table td{ padding:10px 8px; border-bottom:1px solid var(--border); text-align:left; vertical-align:top; }
+.orders-table th{ background:#f7f8fb; }
+.orders-table tr:hover td{ background:#00000005; }
+body.dark .orders-empty{ background:#2a2a1f; border-color:#50492b; color:#f0e3b2; }
+body.dark .orders-table th{ background:#11151c; }
+body.dark .orders-table td, body.dark .orders-table th{ border-color:#1f242d; }
+body.dark .orders-table tr:hover td{ background:#ffffff05; }
+
+/* ========== Admin ========== */
+.admin-main{ padding:20px 30px; }
+.admin-stats{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+.admin-stats .stat{
+  background:var(--card); border:1px solid var(--border); border-radius:10px; padding:8px 12px;
+}
+
+/* Select bonito (solo admin + tablas) */
+.admin-main select,
+.orders-table select{
+  appearance:none; -webkit-appearance:none; -moz-appearance:none;
+  background:var(--card); color:var(--fg);
+  border:1px solid var(--border); border-radius:10px;
+  padding:8px 38px 8px 12px; cursor:pointer; line-height:1.2;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--fg) 50%),
+    linear-gradient(135deg, var(--fg) 50%, transparent 50%),
+    linear-gradient(var(--fg) 0 0);
+  background-position:
+    calc(100% - 20px) calc(50% - 4px),
+    calc(100% - 14px) calc(50% - 4px),
+    calc(100% - 26px) 50%;
+  background-size:6px 6px, 6px 6px, 1px 14px;
+  background-repeat:no-repeat;
+  transition:border-color .15s, box-shadow .15s;
+}
+.admin-main select:focus,
+.orders-table select:focus{ border-color:var(--accent); box-shadow:0 0 0 3px var(--ring); }
+
+/* Acciones admin */
+.btn.small{ padding:6px 10px; font-size:.9rem; border-radius:10px; }
