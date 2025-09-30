@@ -21,56 +21,168 @@
   </header>
 
   <main class="admin-main">
+    <!-- Guard -->
     <section class="admin-guard" id="admin-guard">
       Verificando permisos…
     </section>
 
+    <!-- Contenido -->
     <section id="admin-content" class="admin-content" hidden>
-      <h1>Panel de pedidos</h1>
+      <h1>Panel de administración</h1>
 
-      <!-- Filtros -->
-      <div class="filters">
-        <label>
-          Estado:
-          <select id="f-status">
-            <option value="">Todos</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="enviado">Enviado</option>
-            <option value="entregado">Entregado</option>
+      <!-- Tabs -->
+      <div class="filters" style="padding-top:0">
+        <button id="tab-orders"    class="btn">Pedidos</button>
+        <button id="tab-products"  class="btn ghost">Productos</button>
+        <button id="tab-reportes"  class="btn ghost">Reportes</button>
+      </div>
+
+      <!-- ========== Sección PEDIDOS ========== -->
+      <section id="orders-section">
+        <h2>Pedidos</h2>
+
+        <div class="filters">
+          <label>
+            Estado:
+            <select id="f-status">
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="enviado">Enviado</option>
+              <option value="entregado">Entregado</option>
+            </select>
+          </label>
+
+          <label>
+            Buscar por cliente/email:
+            <input id="f-q" type="text" placeholder="Nombre o email">
+          </label>
+
+          <button id="f-apply" class="btn">Aplicar</button>
+          <button id="f-clear" class="btn ghost">Limpiar</button>
+        </div>
+
+        <div class="admin-stats" id="admin-stats"></div>
+
+        <div class="orders-table-wrap">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Estado</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="admin-orders-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== Sección PRODUCTOS ========== -->
+      <section id="products-section" hidden>
+        <h2>Productos</h2>
+
+        <!-- Alta rápida -->
+        <form id="prod-form" class="login-form" style="margin:12px 0; width:min(100%,720px)">
+          <h3>Crear producto</h3>
+          <label>Nombre</label>
+          <input id="p-name" type="text" placeholder="Nombre" required>
+
+          <label>Categoría</label>
+          <select id="p-category" required>
+            <option value="">Cargando categorías…</option>
           </select>
-        </label>
 
-        <label>
-          Buscar por cliente/email:
-          <input id="f-q" type="text" placeholder="Nombre o email">
-        </label>
+          <label>Descripción corta (opcional)</label>
+          <input id="p-desc" type="text" placeholder="Máx 220 caracteres">
 
-        <button id="f-apply" class="btn">Aplicar</button>
-        <button id="f-clear" class="btn ghost">Limpiar</button>
-      </div>
+          <label style="display:flex; gap:8px; align-items:center; margin-top:4px">
+            <input id="p-active" type="checkbox" checked>
+            Activo
+          </label>
 
-      <!-- Resumen simple -->
-      <div class="admin-stats" id="admin-stats">
-        <!-- Se llena por JS -->
-      </div>
+          <div style="display:flex; gap:10px; margin-top:8px">
+            <button class="btn" type="submit">Crear</button>
+            <button class="btn ghost" type="button" id="p-reset">Limpiar</button>
+          </div>
+          <p class="hint">El <strong>slug</strong> se genera automáticamente y es único.</p>
+        </form>
 
-      <!-- Tabla pedidos -->
-      <div class="orders-table-wrap">
-        <table class="orders-table">
-          <thead>
-          <tr>
-            <th>#</th>
-            <th>Fecha</th>
-            <th>Cliente</th>
-            <th>Estado</th>
-            <th>Items</th>
-            <th>Total</th>
-            <th>Acciones</th>
-          </tr>
-          </thead>
-          <tbody id="admin-orders-body"></tbody>
-        </table>
-      </div>
+        <!-- Tabla -->
+        <div class="orders-table-wrap">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Slug</th>
+                <th>Act.</th>
+                <th>Variantes</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="prod-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== Sección REPORTES (NUEVA) ========== -->
+      <section id="reportes-section" hidden>
+        <h2>Reportes</h2>
+
+        <!-- Filtros -->
+        <div class="filters">
+          <label>Desde <input id="r-desde" type="date"></label>
+          <label>Hasta <input id="r-hasta" type="date"></label>
+          <label>Fecha corte (Balance) <input id="r-al" type="date"></label>
+          <button id="r-cargar" class="btn">Cargar</button>
+          <button id="r-csv" class="btn ghost">Exportar CSV</button>
+        </div>
+
+        <!-- KPIs -->
+        <div class="orders-table-wrap" style="margin-top:10px">
+          <table class="orders-table">
+            <thead><tr><th colspan="2">KPIs</th></tr></thead>
+            <tbody>
+              <tr><th>Ventas totales</th><td id="k-ventas">$0</td></tr>
+              <tr><th>Boletas</th><td id="k-boletas">0</td></tr>
+              <tr><th>Ticket promedio</th><td id="k-ticket">$0</td></tr>
+              <tr><th>Top producto (cantidad)</th><td id="k-top">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Estado de resultados -->
+        <div class="orders-table-wrap" style="margin-top:10px">
+          <table class="orders-table">
+            <thead><tr><th colspan="2">Estado de resultados</th></tr></thead>
+            <tbody id="tabla-er">
+              <tr><th>Ingresos</th><td id="er-ingresos">$0</td></tr>
+              <tr><th>Costos de ventas (COGS)</th><td id="er-cogs">$0</td></tr>
+              <tr><th>Utilidad bruta</th><td id="er-ub">$0</td></tr>
+              <tr><th>Impuestos</th><td id="er-imp">$0</td></tr>
+              <tr><th>Utilidad neta</th><td id="er-un">$0</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Balance general -->
+        <div class="orders-table-wrap" style="margin-top:10px">
+          <table class="orders-table">
+            <thead><tr><th colspan="2">Balance general</th></tr></thead>
+            <tbody>
+              <tr><th>Activos - Caja estimada</th><td id="bal-caja">$0</td></tr>
+              <tr><th>Activos - Inventario</th><td id="bal-inv">$0</td></tr>
+              <tr><th>Pasivos - Cuentas por pagar</th><td id="bal-cxp">$0</td></tr>
+              <tr><th>Patrimonio</th><td id="bal-pat">$0</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </section>
   </main>
 

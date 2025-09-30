@@ -1,5 +1,5 @@
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -23,7 +23,7 @@ model User {
   name      String
   email     String   @unique
   password  String
-  phone     String?  @db.VarChar(32)
+  phone     String?
   role      Role     @default(cliente)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -38,14 +38,14 @@ model Address {
   id         Int      @id @default(autoincrement())
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     Int
-  label      String?  @db.VarChar(80)
-  recipient  String   @db.VarChar(120)
-  phone      String?  @db.VarChar(32)
-  country    String   @default("Colombia") @db.VarChar(80)
-  department String   @db.VarChar(80)
-  city       String   @db.VarChar(80)
-  street     String   @db.VarChar(255)
-  extraInfo  String?  @db.VarChar(255)
+  label      String?
+  recipient  String
+  phone      String?
+  country    String   @default("Colombia")
+  department String
+  city       String
+  street     String
+  extraInfo  String?
   isDefault  Boolean  @default(false)
   createdAt  DateTime @default(now())
 
@@ -55,8 +55,8 @@ model Address {
 
 model Category {
   id   Int    @id @default(autoincrement())
-  name String @db.VarChar(120)
-  slug String @unique @db.VarChar(140)
+  name String
+  slug String @unique
 
   products Product[]
 }
@@ -65,51 +65,61 @@ model Product {
   id               Int      @id @default(autoincrement())
   category         Category @relation(fields: [categoryId], references: [id])
   categoryId       Int
-  name             String   @db.VarChar(160)
-  slug             String   @unique @db.VarChar(180)
-  shortDescription String?  @db.VarChar(220)
+  name             String
+  slug             String   @unique
+  shortDescription String?
   active           Boolean  @default(true)
-  discountPercent  Decimal? @db.Decimal(5, 2)
+  discountPercent  Decimal?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   variants ProductVariant[]
   images   ProductImage[]
 
-  // back-relations necesarios
+  // back-relations existentes
   cartItems  CartItem[]
   orderItems OrderItem[]
+
+  // NEW: back-relation para compras
+  purchaseItems PurchaseItem[]
 }
 
 model ProductVariant {
   id        Int      @id @default(autoincrement())
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int
-  sku       String?  @db.VarChar(64)
-  color     String?  @db.VarChar(60)
-  size      String?  @db.VarChar(60)
+  sku       String?
+  color     String?
+  size      String?
   priceCent Int      @default(0)
   stock     Int      @default(0)
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // back-relations existentes
   cartItems  CartItem[]
   orderItems OrderItem[]
+
+  // NEW: costo promedio vigente
+  costCent Int @default(0)
+
+  // NEW: back-relation para compras
+  purchaseItems PurchaseItem[]
 }
 
 model ProductImage {
   id        Int      @id @default(autoincrement())
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int
-  url       String   @db.VarChar(255)
+  url       String
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
 }
 
 model Settings {
   id                Int     @id
-  taxPercent        Decimal @default(19.00) @db.Decimal(5, 2)
+  taxPercent        Decimal @default(19.00)
   shippingFixedCent Int     @default(0)
 }
 
@@ -148,9 +158,12 @@ model Order {
   taxCent      Int         @default(0)
   shippingCent Int         @default(0)
   totalCent    Int         @default(0)
-  notes        String?     @db.VarChar(255)
+  notes        String?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+
+  // NEW: si en ventas llegaran a practicar retefuente
+  retefuenteCent Int @default(0)
 
   items OrderItem[]
 }
@@ -163,10 +176,70 @@ model OrderItem {
   productId     Int
   variant       ProductVariant @relation(fields: [variantId], references: [id])
   variantId     Int
-  nameSnapshot  String         @db.VarChar(160)
-  colorSnapshot String?        @db.VarChar(60)
-  sizeSnapshot  String?        @db.VarChar(60)
+  nameSnapshot  String
+  colorSnapshot String?
+  sizeSnapshot  String?
   qty           Int
   unitPriceCent Int
   lineTotalCent Int
+
+  // NEW: costo unitario histórico al momento de la venta
+  costSnapshotCent Int @default(0)
+}
+
+/**
+ * =======================
+ * NUEVOS MODELOS CONTAB.
+ * =======================
+ */
+
+model Supplier {
+  id        Int      @id @default(autoincrement())
+  name      String
+  nit       String?  @unique
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
+
+  purchases Purchase[]
+}
+
+model Purchase {
+  id            Int      @id @default(autoincrement())
+  supplier      Supplier @relation(fields: [supplierId], references: [id])
+  supplierId    Int
+  invoiceNumber String?
+  notes         String?
+
+  subtotalCent   Int @default(0) // base sin IVA
+  ivaCent        Int @default(0) // IVA descontable (19%)
+  retefuenteCent Int @default(0) // si te practicaron retefuente
+  totalCent      Int @default(0) // subtotal + iva - retefuente
+
+  createdAt DateTime @default(now())
+
+  items PurchaseItem[]
+}
+
+model PurchaseItem {
+  id               Int            @id @default(autoincrement())
+  purchase         Purchase       @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  purchaseId       Int
+  product          Product        @relation(fields: [productId], references: [id])
+  productId        Int
+  variant          ProductVariant @relation(fields: [variantId], references: [id])
+  variantId        Int
+  qty              Int
+  unitCostCent     Int            @default(0) // costo unitario compra
+  ivaUnitCent      Int            @default(0) // si desglosas IVA unidad
+  lineSubtotalCent Int            @default(0) // qty * unitCostCent
+}
+
+model Expense {
+  id         Int      @id @default(autoincrement())
+  category   String // "Nómina", "Arriendo", "Publicidad", etc.
+  detail     String?
+  amountCent Int      @default(0)
+  date       DateTime @default(now())
+  createdAt  DateTime @default(now())
 }

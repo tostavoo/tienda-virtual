@@ -1,6 +1,9 @@
 // =====================
-// Utilidades / Estado
+// Config / Utilidades
 // =====================
+const API_BASE = 'http://localhost:4000/api';
+const api = (p) => `${API_BASE}${p}`;
+
 const fmtCOP = (n) =>
   Number(n || 0).toLocaleString("es-CO", {
     style: "currency",
@@ -13,6 +16,29 @@ const STORAGE_THEME_KEY = "THEME";
 
 let cart = [];            // [{ name, price, variantId, qty }]
 let lastFocus = null;
+
+// Helpers de red robustos
+async function parseJsonOrThrow(res) {
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    const txt = await res.text().catch(()=> '');
+    throw new Error(`HTTP ${res.status} ${res.statusText} — respuesta no JSON: ${txt.slice(0,120)}`);
+  }
+  const data = await res.json();
+  if (!res.ok) {
+    const msg = (data && (data.error || data.message)) || `HTTP ${res.status}`;
+    const err = new Error(msg);
+    err.status = res.status;
+    err.payload = data;
+    throw err;
+  }
+  return data;
+}
+
+async function getJSON(path, opts={}) {
+  const res = await fetch(api(path), opts);
+  return parseJsonOrThrow(res);
+}
 
 // =====================
 // Referencias DOM
@@ -52,6 +78,15 @@ const $ordersLink  = document.getElementById("orders-link");
 const $ordersSec   = document.getElementById("orders-section");
 const $ordersEmpty = document.getElementById("orders-empty");
 const $ordersBody  = document.getElementById("orders-body");
+
+// ===== Filtros catálogo (UI)
+const $fSearch   = document.getElementById('f-search');
+const $fCategory = document.getElementById('f-category');
+const $fMin      = document.getElementById('f-min');
+const $fMax      = document.getElementById('f-max');
+const $fSort     = document.getElementById('f-sort');
+const $fApply    = document.getElementById('f-apply');
+const $fClear    = document.getElementById('f-clear');
 
 // =====================
 // Persistencia carrito
@@ -200,17 +235,49 @@ function renderCart() {
 }
 
 // =====================
+// Filtros catálogo
+// =====================
+function buildProductQuery() {
+  const params = new URLSearchParams();
+  const s  = ($fSearch?.value || '').trim();
+  const c  = ($fCategory?.value || '').trim();
+  const mi = Number.parseInt($fMin?.value || '', 10);
+  const ma = Number.parseInt($fMax?.value || '', 10);
+  const so = ($fSort?.value || '').trim();
+
+  if (s)  params.set('search', s);
+  if (c)  params.set('category', c);
+  if (!Number.isNaN(mi) && mi >= 0) params.set('min', String(mi));
+  if (!Number.isNaN(ma) && ma >= 0) params.set('max', String(ma));
+  if (so) params.set('sort', so);
+
+  return params.toString();
+}
+
+async function cargarCategorias() {
+  try {
+    const cats = await getJSON('/categories');
+    if (!$fCategory) return;
+    $fCategory.innerHTML =
+      '<option value="">Todas las categorías</option>' +
+      cats.map(c => `<option value="${c.slug}">${c.name}</option>`).join('');
+  } catch { /* noop */ }
+}
+
+// =====================
 // Cargar productos API
 // =====================
 async function cargarProductos() {
   try {
-    const res = await fetch("http://localhost:3000/api/products");
-    const productos = await res.json();
+    const qs = buildProductQuery();
+    const path = qs ? `/products?${qs}` : '/products';
+    const productos = await getJSON(path);
+
     if (!$listaProductos) return;
     $listaProductos.innerHTML = "";
 
     productos.forEach((p) => {
-      const v = p.variants?.[0]; // primera variante
+      const v = p.variants?.[0]; // primera variante (más barata)
       const img = p.images?.[0]?.url || "img/placeholder.jpg";
       const priceCent  = v?.priceCent ?? 0;
       const pricePesos = Math.round(priceCent / 100); // centavos -> pesos
@@ -239,6 +306,10 @@ async function cargarProductos() {
           price: parseInt(card.dataset.price, 10) || 0,
           variantId: parseInt(card.dataset.variant, 10) || 0,
         };
+        if (!item.variantId) {
+          alert('Este producto no tiene variante disponible.');
+          return;
+        }
         addToCart(item);
       });
     });
@@ -246,6 +317,17 @@ async function cargarProductos() {
     console.error("Error cargando productos:", err);
   }
 }
+
+// Botones de filtros
+$fApply?.addEventListener('click', () => cargarProductos());
+$fClear?.addEventListener('click', () => {
+  if ($fSearch)   $fSearch.value = '';
+  if ($fCategory) $fCategory.value = '';
+  if ($fMin)      $fMin.value = '';
+  if ($fMax)      $fMax.value = '';
+  if ($fSort)     $fSort.value = '';
+  cargarProductos();
+});
 
 // =====================
 // Checkout
@@ -265,13 +347,22 @@ async function checkoutDesdeCarrito() {
   if (items.length === 0) { alert("Carrito vacío"); return; }
 
   try {
-    const res = await fetch("http://localhost:3000/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ items })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Error en checkout");
+    // Intento 1: API nueva
+    let data;
+    try {
+      data = await getJSON('/orders', {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ items })
+      });
+    } catch (e1) {
+      // Fallback: API antigua
+      data = await getJSON('/checkout', {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ items })
+      });
+    }
 
     alert(
       `Pedido #${data.orderId} creado.\n` +
@@ -309,16 +400,18 @@ function getUserInfo(){
 
 function setAuthUI(user){
   if (user) {
-    $authUser.textContent = `${user.name} (${user.role})`;
-    $authUser.hidden = false;
-    $btnLogout.hidden = false;
-    $btnLogin.hidden  = true;
+    if ($authUser) {
+      $authUser.textContent = `${user.name} (${user.role})`;
+      $authUser.hidden = false;
+    }
+    if ($btnLogout) $btnLogout.hidden = false;
+    if ($btnLogin)  $btnLogin.hidden  = true;
     if ($adminLink)  $adminLink.hidden  = user.role !== 'admin';
     if ($ordersLink) $ordersLink.hidden = false;
   } else {
-    $authUser.hidden = true;
-    $btnLogout.hidden = true;
-    $btnLogin.hidden  = false;
+    if ($authUser)  $authUser.hidden = true;
+    if ($btnLogout) $btnLogout.hidden = true;
+    if ($btnLogin)  $btnLogin.hidden  = false;
     if ($adminLink)  $adminLink.hidden  = true;
     if ($ordersLink) $ordersLink.hidden = true;
   }
@@ -335,13 +428,23 @@ $loginForm?.addEventListener('submit', async (e)=>{
   try {
     const email = $loginEmail.value.trim();
     const password = $loginPass.value;
-    const res = await fetch('http://localhost:3000/api/login', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ email, password })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Credenciales inválidas');
+
+    // Intento 1: /auth/login
+    let data;
+    try {
+      data = await getJSON('/auth/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ email, password })
+      });
+    } catch (e1) {
+      // Fallback: /login
+      data = await getJSON('/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ email, password })
+      });
+    }
 
     setToken(data.token);
     setUserInfo(data.user);
@@ -369,12 +472,16 @@ async function fetchMe(){
   const token = getToken();
   if (!token) return null;
   try {
-    const res = await fetch('http://localhost:3000/api/me', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) throw 0;
-    return await res.json();
-  } catch { return null; }
+    try {
+      // Preferente API nueva
+      return await getJSON('/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+    } catch (e1) {
+      // Fallback API antigua
+      return await getJSON('/me', { headers: { Authorization: `Bearer ${token}` } });
+    }
+  } catch {
+    return null;
+  }
 }
 
 // =====================
@@ -394,11 +501,12 @@ async function loadMyOrders() {
   if (!token) { openLogin(); return; }
 
   try {
-    const res = await fetch('http://localhost:3000/api/orders', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'No se pudieron cargar los pedidos');
+    let data;
+    try {
+      data = await getJSON('/orders/mine', { headers: { Authorization: `Bearer ${token}` } });
+    } catch (e1) {
+      data = await getJSON('/orders', { headers: { Authorization: `Bearer ${token}` } });
+    }
     renderOrders(data);
   } catch (err) {
     console.error(err);
@@ -447,7 +555,9 @@ function renderOrders(orders) {
   loadTheme();
   loadCart();
   renderCart();
-  await cargarProductos();
+
+  await cargarCategorias();  // llena dropdown
+  await cargarProductos();   // respeta filtros actuales (si hay)
 
   // Sincronizar auth (si hay token)
   const me = await fetchMe();

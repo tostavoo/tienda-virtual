@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reportes — Admin</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0b0f14; --panel:#121923; --muted:#8892a6; --brand:#4ea8de; --ok:#16a34a; --warn:#eab308; --err:#ef4444; }
+    html,body { margin:0; background:var(--bg); color:#e6edf3; font-family:Inter,system-ui,Segoe UI,Arial; }
+    .wrap { max-width:1100px; margin:32px auto; padding:0 16px; }
+    h1 { font-size:28px; margin:0 0 8px; }
+    .sub { color:var(--muted); margin-bottom:24px; }
+    .filters { display:grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap:12px; align-items:end; }
+    .card { background:var(--panel); border:1px solid #1f2937; border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.25); }
+    label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    input[type="date"] { width:100%; padding:10px 12px; border-radius:10px; border:1px solid #253041; background:#0f1622; color:#e6edf3; }
+    button { padding:10px 14px; border-radius:12px; border:0; background:var(--brand); color:#00111f; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    .grid { display:grid; gap:12px; grid-template-columns: repeat(4, minmax(0,1fr)); margin-top:16px; }
+    .kpi { display:flex; flex-direction:column; gap:8px; }
+    .kpi .k { font-size:12px; color:var(--muted); }
+    .kpi .v { font-size:22px; font-weight:700; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding:10px 12px; border-bottom:1px solid #1f2937; text-align:left; }
+    th { color:#a1a9bb; font-weight:600; background:#0f1622; position:sticky; top:0; }
+    .table-wrap { overflow:auto; border-radius:12px; border:1px solid #1f2937; }
+    .row { display:grid; grid-template-columns: 1fr auto auto; gap:12px; align-items:center; }
+    .row > *:last-child { justify-self:end; }
+    .badge { font-size:12px; color:#9fb4ff; background:#0e1a33; padding:4px 8px; border-radius:999px; border:1px solid #20335e; }
+    .muted { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Reportes financieros</h1>
+    <div class="sub">KPIs, Estado de Resultados y Balance General</div>
+
+    <div class="card">
+      <div class="filters">
+        <div>
+          <label>Desde</label>
+          <input id="f-desde" type="date">
+        </div>
+        <div>
+          <label>Hasta</label>
+          <input id="f-hasta" type="date">
+        </div>
+        <div>
+          <label>Fecha corte (Balance)</label>
+          <input id="f-al" type="date">
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="btn-cargar">Cargar</button>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="btn-csv">Exportar CSV</button>
+        </div>
+        <div style="justify-self:end">
+          <span id="tag-rango" class="badge">Sin rango</span>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:18px">
+        <div class="card kpi"><div class="k">Ventas totales</div><div id="k-ventas" class="v">$0</div></div>
+        <div class="card kpi"><div class="k">Boletas</div><div id="k-boletas" class="v">0</div></div>
+        <div class="card kpi"><div class="k">Ticket promedio</div><div id="k-ticket" class="v">$0</div></div>
+        <div class="card kpi"><div class="k">Top producto (cant.)</div><div id="k-top" class="v muted">—</div></div>
+      </div>
+    </div>
+
+    <div class="row" style="margin:18px 0 10px">
+      <h2 style="margin:0">Estado de resultados</h2>
+      <span id="er-rango" class="badge">—</span>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <tbody id="tabla-er">
+            <tr><th>Ingresos</th><td id="er-ingresos">$0</td></tr>
+            <tr><th>Costos de ventas (COGS)</th><td id="er-cogs">$0</td></tr>
+            <tr><th>Utilidad bruta</th><td id="er-ub">$0</td></tr>
+            <tr><th>Impuestos</th><td id="er-imp">$0</td></tr>
+            <tr><th>Utilidad neta</th><td id="er-un">$0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="row" style="margin:18px 0 10px">
+      <h2 style="margin:0">Balance general</h2>
+      <span id="bal-corte" class="badge">—</span>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <tbody>
+            <tr><th>Activos - Caja estimada</th><td id="bal-caja">$0</td></tr>
+            <tr><th>Activos - Inventario</th><td id="bal-inv">$0</td></tr>
+            <tr><th>Pasivos - CxP</th><td id="bal-cxp">$0</td></tr>
+            <tr><th>Patrimonio</th><td id="bal-pat">$0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="muted" style="margin-top:16px">Tip: guarda el token en <code>localStorage.setItem('token', '...')</code> una vez logueado.</p>
+  </div>
+
+  <script src="./reportes.js"></script>
+</body>
+</html>

@@ -1,26 +1,28 @@
 {
-  "name": "tienda-virtual",
+  "name": "tienda-virtual-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
-  "scripts": {
-  "dev": "nodemon server.js",
-  "start": "node server.js",
-  "seed": "node prisma/seed.js"
-},
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "express": "^5.1.0",
-    "nodemon": "^3.1.10",
-    "prisma": "^6.14.0"
+  "description": "API de Mi Tienda",
+  "main": "server.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
   },
+  "scripts": {
+  "seed": "node prisma/seed.js",
+  "dev": "nodemon server.js",
+  "start": "node server.js"
+}
+,
   "dependencies": {
     "@prisma/client": "^6.14.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
+    "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "prisma": "^6.14.0"
   }
 }

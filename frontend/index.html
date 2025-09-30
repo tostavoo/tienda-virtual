@@ -44,6 +44,24 @@
 
   <!-- Contenido principal -->
   <main>
+    <!-- Barra de filtros -->
+<section class="filters">
+  <input id="f-search" type="search" placeholder="Buscar producto..." />
+  <select id="f-category">
+    <option value="">Todas las categorías</option>
+  </select>
+  <input id="f-min" type="number" min="0" placeholder="Mín $" />
+  <input id="f-max" type="number" min="0" placeholder="Máx $" />
+  <select id="f-sort">
+    <option value="">Ordenar</option>
+    <option value="price_asc">Precio: menor a mayor</option>
+    <option value="price_desc">Precio: mayor a menor</option>
+    <option value="newest">Más nuevos</option>
+  </select>
+  <button id="f-apply" class="btn">Aplicar</button>
+  <button id="f-clear" class="btn ghost">Limpiar</button>
+</section>
+
     <!-- Listado de productos (se llena desde app.js) -->
     <section class="productos" aria-label="Listado de productos"></section>
 

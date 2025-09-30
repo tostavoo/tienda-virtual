@@ -1,4 +1,5 @@
-// seed.js
+// seed.js (versión no destructiva, mismas claves/valores que ya tenías)
+// Cambios: solo URLs de imágenes para que se vean en el frontend.
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
@@ -11,7 +12,7 @@ async function main() {
     create: { id: 1, taxPercent: 19.0, shippingFixedCent: 8000 },
   });
 
-  // Admin y cliente demo
+  // Admin y cliente demo (mismas credenciales)
   const adminPass = await bcrypt.hash('admin123', 10);
   const clientPass = await bcrypt.hash('cliente123', 10);
 
@@ -37,7 +38,7 @@ async function main() {
     },
   });
 
-  // Dirección por defecto
+  // Dirección por defecto (campos requeridos según tu schema)
   await prisma.address.create({
     data: {
       userId: cliente.id,
@@ -47,10 +48,11 @@ async function main() {
       city: 'Floridablanca',
       street: 'Calle 123 #45-67',
       isDefault: true,
+      // country tiene default "Colombia" en el schema
     },
   });
 
-  // Categorías
+  // Categorías (sin cambios)
   const futbol = await prisma.category.upsert({
     where: { slug: 'futbol' },
     update: {},
@@ -67,7 +69,7 @@ async function main() {
     create: { name: 'Boxeo', slug: 'boxeo' },
   });
 
-  // Productos
+  // Productos (sin cambios en slugs ni descuentos)
   const p1 = await prisma.product.upsert({
     where: { slug: 'balon-futbol' },
     update: {},
@@ -104,32 +106,31 @@ async function main() {
     },
   });
 
-  // Variantes (precio en centavos COP)
-  await prisma.productVariant.createMany({
-    data: [
-      { productId: p1.id, sku: 'SKU-FUT-ROJO', color: 'Rojo', priceCent: 2000000, stock: 15 },
-      { productId: p2.id, sku: 'SKU-BAS-STD', priceCent: 3500000, stock: 10 },
-      { productId: p3.id, sku: 'SKU-BOX-M', color: 'Rojo', size: 'M', priceCent: 5000000, stock: 8 },
-    ],
-    skipDuplicates: true,
-  });
+  // Variantes (precio en centavos COP) — SIN cambios
+await prisma.productVariant.createMany({
+  data: [
+    { productId: p1.id, sku: 'SKU-FUT-ROJO', color: 'Rojo', priceCent: 2000000, stock: 15 },
+    { productId: p2.id, sku: 'SKU-BAS-STD', priceCent: 3500000, stock: 10 },
+    { productId: p3.id, sku: 'SKU-BOX-M', color: 'Rojo', size: 'M', priceCent: 5000000, stock: 8 },
+  ],
+});
 
-  // Imágenes (pon tus propias URLs si quieres)
+  // Imágenes: reemplazo de example.com -> picsum.photos (solo visual)
   await prisma.productImage.createMany({
-    data: [
-      { productId: p1.id, url: 'https://example.com/img/producto1.webp', sortOrder: 0 },
-      { productId: p2.id, url: 'https://example.com/img/producto2.jpg', sortOrder: 0 },
-      { productId: p3.id, url: 'https://example.com/img/producto3.jpg', sortOrder: 0 },
-    ],
-    skipDuplicates: true,
-  });
+  data: [
+    { productId: p1.id, url: 'https://picsum.photos/seed/balon/800/600', sortOrder: 0 },
+    { productId: p2.id, url: 'https://picsum.photos/seed/basket/800/600', sortOrder: 0 },
+    { productId: p3.id, url: 'https://picsum.photos/seed/guantes/800/600', sortOrder: 0 },
+  ],
+});
 
-  console.log('✅ Seed completado');
+
+  console.log('✅ Seed completado (mismos datos, imágenes actualizadas)');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Error en seed:', e);
     process.exit(1);
   })
   .finally(async () => {

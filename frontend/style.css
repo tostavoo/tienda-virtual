@@ -248,3 +248,140 @@ body.dark .orders-table tr:hover td{ background:#ffffff05; }
 
 /* Acciones admin */
 .btn.small{ padding:6px 10px; font-size:.9rem; border-radius:10px; }
+
+/* ========== Filtros catálogo ========== */
+.filters{
+  display: grid;
+  grid-template-columns: 1.6fr 1.2fr repeat(2, 1fr) 1.2fr auto auto;
+  gap: 10px;
+  padding: 16px 24px;
+}
+
+.filters input[type="search"],
+.filters input[type="number"],
+.filters select{
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  background: var(--card);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  line-height: 1.2;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+  box-shadow: 0 4px 10px var(--shadow);
+}
+
+/* caret para select */
+.filters select{
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--fg) 50%),
+    linear-gradient(135deg, var(--fg) 50%, transparent 50%),
+    linear-gradient(var(--fg) 0 0);
+  background-position:
+    calc(100% - 20px) calc(50% - 4px),
+    calc(100% - 14px) calc(50% - 4px),
+    calc(100% - 26px) 50%;
+  background-size: 6px 6px, 6px 6px, 1px 14px;
+  background-repeat: no-repeat;
+  padding-right: 38px;
+}
+
+.filters input:focus,
+.filters select:focus{
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+/* Botones de filtros */
+.filters .btn{
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  box-shadow: 0 10px 20px var(--shadow);
+  transition: transform .12s ease, filter .12s ease;
+  height: 42px;
+}
+.filters .btn:hover{ transform: translateY(-1px); filter: brightness(.98); }
+
+.filters .btn.ghost{
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 16px var(--shadow);
+}
+.filters .btn.ghost:hover{ border-color: var(--accent); color: var(--accent); }
+
+/* Dark tweaks */
+body.dark .filters input,
+body.dark .filters select{
+  background: var(--card);
+  border-color: var(--border);
+}
+
+/* Responsive */
+@media (max-width: 980px){
+  .filters{
+    grid-template-columns: 1fr 1fr;
+  }
+  .filters #f-sort{ order: 3; }
+  .filters #f-min{ order: 4; }
+  .filters #f-max{ order: 5; }
+  .filters #f-apply{ order: 6; }
+  .filters #f-clear{ order: 7; }
+}
+@media (max-width: 560px){
+  .filters{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========== Botones globales ========== */
+.btn{
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  box-shadow: 0 8px 18px var(--shadow);
+  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+}
+.btn:hover{ transform: translateY(-1px); filter: brightness(.98); }
+.btn:disabled{ opacity: .6; cursor: not-allowed; }
+.btn:focus-visible{ outline: none; box-shadow: 0 0 0 3px var(--ring); }
+
+/* Variante “ghost” (borde) */
+.btn.ghost{
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 16px var(--shadow);
+}
+.btn.ghost:hover{ border-color: var(--accent); color: var(--accent); }
+
+/* Tamaño pequeño (acciones en tabla) */
+.btn.small{ padding: 6px 10px; font-size: .9rem; border-radius: 10px; }
+
+/* Asegurar visibilidad en celdas de tablas/admin */
+.orders-table td .btn{ white-space: nowrap; }
+.admin-main .btn{ height: auto; }
+
+/* Colores utilitarios (opcional) */
+.btn.success{ background:#16a34a; color:#fff; }
+.btn.warn{ background:#6b7280; color:#fff; }
+.btn.danger{ background:#dc2626; color:#fff; }
+.btn.success:hover,
+.btn.warn:hover,
+.btn.danger:hover{ filter: brightness(.98); }
+
+/* Modo oscuro: mejor contraste para ghost */
+body.dark .btn.ghost{ color: var(--fg); border-color: #2b3240; }
+body.dark .btn.ghost:hover{ border-color: var(--accent); color: var(--accent); }
